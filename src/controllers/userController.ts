@@ -9,7 +9,8 @@ export const getRecords = async (req: Request, res: Response) => {
         id: true,
         firstname: true,
         lastname: true,
-        email: true
+        email: true,
+        image: true
       }
     });
     res.json(users);

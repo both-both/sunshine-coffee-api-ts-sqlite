@@ -18,23 +18,14 @@ export const fieldTypes: Record<string, Record<string, 'string' | 'number' | 'bo
     description: 'string',
     price: 'number',
     stock: 'number',
+    roast: 'number',
     isActive: 'boolean',
     createdAt: 'date'
   },
-  review: {
+  testemony: {
     id: 'number',
-    title: 'string',
-    comment: 'string',
-    numStars: 'number',
-    productId: 'number',
     userId: 'number',
-    isActive: 'boolean',
-    createdAt: 'date',
-    updatedAt: 'date'
-  },
-  favorite: {
-    id: 'number',
-    productId: 'number',
-    userId: 'number'
+    content: 'string',
+    createdAt: 'date'
   }
 };
