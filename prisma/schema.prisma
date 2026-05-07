@@ -9,8 +9,8 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model User {
@@ -19,7 +19,7 @@ model User {
   lastname     String  @default("Ikke navngivet")
   email        String  @unique // -> Unik værdi
   password     String
-  description  String? @db.Text // -> Lang tekst
+  description  String? // -> Lang tekst
   image        String
   refreshToken String
   isActive     Boolean @default(true) // -> Bool med default true
@@ -34,8 +34,8 @@ model Product {
   name        String
   slug        String
   image       String
-  description String?  @db.Text // -> Lang tekst
-  price       Decimal  @db.Decimal(10, 2) // -> Decimaltal til pris
+  description String?  // -> Lang tekst
+  price       Float    // -> Decimaltal til pris
   stock       Int
   roast       Int
   isActive    Boolean  @default(true)
@@ -47,7 +47,7 @@ model Product {
 model Testemony {
   id        Int      @id @default(autoincrement())
   userId    Int
-  content   String?  @db.Text // -> Lang tekst
+  content   String?  // -> Lang tekst
   createdAt DateTime @default(now()) // -> Datotid
 
   user User @relation(fields: [userId], references: [id])

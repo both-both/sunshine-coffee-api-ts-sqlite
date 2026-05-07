@@ -61,8 +61,7 @@ const seedData = async (model: ModelName, data: any[]) => {
 
 
     await (prisma[model] as any).createMany({
-      data,
-      skipDuplicates: true
+      data
     });
   } catch (error) {
     console.error(`Failed to seed ${String(model)}:`, error);
