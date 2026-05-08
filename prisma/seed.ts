@@ -1,4 +1,6 @@
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
+import { PrismaLibSql } from '@prisma/adapter-libsql';
 import path from 'path';
 import bcrypt from 'bcrypt';
 import { readdir, readFile } from 'fs/promises';
@@ -9,13 +11,8 @@ import { fieldTypes } from './types.js';
 type FieldType = 'string' | 'number' | 'boolean' | 'date';
 const keysOrder = Object.keys(fieldTypes)
 
-const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL!
-    }
-  }
-});
+const adapter = new PrismaLibSql({ url: process.env.DATABASE_URL! });
+const prisma = new PrismaClient({ adapter } as ConstructorParameters<typeof PrismaClient>[0]);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -68,7 +65,6 @@ const seedData = async (model: ModelName, data: any[]) => {
     const modelName = String(model);
 
     console.log(modelName);
-
 
     await (prisma[model] as any).createMany({
       data
