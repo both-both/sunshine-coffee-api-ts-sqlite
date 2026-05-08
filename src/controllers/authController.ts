@@ -3,7 +3,7 @@ import {
     authenticateUser,
     verifyRefreshToken,
     getUserIdFromToken,
-} from "../services/authServices";
+} from "../services/authServices.js";
 
 export const Authenticate = async (req: Request, res: Response): Promise<void> => {
     const { username, password } = req.body;

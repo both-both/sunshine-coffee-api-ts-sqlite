@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getRecord, getRecords } from '../controllers/testemonyController'
+import { getRecord, getRecords } from '../controllers/testemonyController.js'
 
 const routes = Router();
 routes.get('/', getRecords);

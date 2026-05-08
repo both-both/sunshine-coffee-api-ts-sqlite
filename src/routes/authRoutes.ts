@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { Authenticate, getUserFromToken, refreshAccessToken } from '../controllers/authController';
-import { Authorize } from '../middleware/authMiddleware';
+import { Authenticate, getUserFromToken, refreshAccessToken } from '../controllers/authController.js';
+import { Authorize } from '../middleware/authMiddleware.js';
 
 const router = Router();
 router.post("/login", Authenticate);

@@ -4,12 +4,18 @@ import bcrypt from 'bcrypt';
 import { readdir, readFile } from 'fs/promises';
 import { fileURLToPath } from 'url';
 import { parse } from 'csv-parse/sync';
-import { fieldTypes } from './types';
+import { fieldTypes } from './types.js';
 
 type FieldType = 'string' | 'number' | 'boolean' | 'date';
 const keysOrder = Object.keys(fieldTypes)
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL!
+    }
+  }
+});
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,6 +24,10 @@ const directory = path.join(__dirname, 'csv');
 async function processCsvFiles() {
   const files = await readdir(directory);
   const csvFiles = files.filter(f => f.endsWith('.csv'));
+
+  for (const modelName of [...keysOrder].reverse()) {
+    await (prisma[modelName as ModelName] as any).deleteMany();
+  }
 
   for (const modelName of keysOrder) {
     const filename = `${modelName}.csv`;

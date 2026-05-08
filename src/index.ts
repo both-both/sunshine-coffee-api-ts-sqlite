@@ -2,10 +2,11 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import path from 'path';
-import { userRoutes } from './routes/userRoutes';
-import { productRoutes } from './routes/productRoutes';
-import { authRoutes } from './routes/authRoutes';
-import { testemonyRoutes } from './routes/testemonyRoutes';
+import { userRoutes } from './routes/userRoutes.js';
+import { productRoutes } from './routes/productRoutes.js';
+import { authRoutes } from './routes/authRoutes.js';
+import { testemonyRoutes } from './routes/testemonyRoutes.js';
+import { homeRoutes } from './routes/homeRoutes.js';
 
 dotenv.config();
 const port = process.env.SERVERPORT || 3000
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
 app.use(cors())
 
+app.use('/', homeRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
