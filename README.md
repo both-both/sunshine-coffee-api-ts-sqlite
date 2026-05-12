@@ -21,18 +21,21 @@ Et starterprojekt med **Node.js**, **TypeScript**, **Express 5**, og **Prisma OR
 ```bash
 git clone [REPO-URL]
 cd [MAPPE-NAVN]
-npm install
 ```
 ### 2. Kopier eller omdøb *.env.example* til *.env*
 
 ```bash
 cp .env.example .env
 ```
-### 3. Start serveren
+### 3. Installer pakker
+```bash
+npm install
+```
+### 4. Start serveren
 ```bash
 npm run dev
 ```
-### 4. Få overblik over data
+### 5. Få overblik over data
 ```bash
 npx prisma studio
 ```
