@@ -1,6 +1,4 @@
-import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
-import { PrismaLibSql } from '@prisma/adapter-libsql';
 import path from 'path';
 import bcrypt from 'bcrypt';
 import { readdir, readFile } from 'fs/promises';
@@ -8,46 +6,74 @@ import { fileURLToPath } from 'url';
 import { parse } from 'csv-parse/sync';
 import { fieldTypes } from './types.js';
 
-type FieldType = 'string' | 'number' | 'boolean' | 'date';
-const keysOrder = Object.keys(fieldTypes)
-
-const adapter = new PrismaLibSql({ url: process.env.DATABASE_URL! });
-const prisma = new PrismaClient({ adapter } as ConstructorParameters<typeof PrismaClient>[0]);
+const prisma = new PrismaClient();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const directory = path.join(__dirname, 'csv');
 
-async function processCsvFiles() {
-  const files = await readdir(directory);
-  const csvFiles = files.filter(f => f.endsWith('.csv'));
+// Array til defination af rækkefølge
+const order = [
+  'user',
+  'product',
+  'testemony'
+];
 
-  for (const modelName of [...keysOrder].reverse()) {
-    await (prisma[modelName as ModelName] as any).deleteMany();
-  }
+async function main() {
+  try {
+    console.log('Clearing database...');
 
-  for (const modelName of keysOrder) {
-    const filename = `${modelName}.csv`;
-    if (!csvFiles.includes(filename)) continue;
+    // Slet i reverse order (pga relations)
+    for (const model of order.slice().reverse()) {
+      await (prisma[model as ModelName] as any).deleteMany();
+    }
 
-    const fullpath = path.join(directory, filename);
-    const content = await readFile(fullpath, 'utf-8');
+    console.log('Database cleared\n');
 
-    const rawRecords = parse(content, {
-      columns: true,
-      skip_empty_lines: true
-    });
+    const files = await readdir(directory);
 
-    const cleanedData = await Promise.all(
-      rawRecords.map((row: Record<string, any>) => castRow(modelName, row))
-    );
+    for (const model of order) {
+      const file = `${model}.csv`;
 
-    await seedData(modelName as ModelName, cleanedData);
+      if (!files.includes(file)) {
+        console.log(`Skipping ${model} (no CSV)`);
+        continue;
+      }
+
+      console.log(`Seeding ${model}...`);
+
+      const fullpath = path.join(directory, file);
+      const content = await readFile(fullpath, 'utf-8');
+
+      const rawRecords = parse(content, {
+        columns: true,
+        skip_empty_lines: true
+      });
+
+      const cleanedData = await Promise.all(
+        rawRecords.map((row: Record<string, any>) =>
+          castRow(model, row)
+        )
+      );
+
+      await (prisma[model as ModelName] as any).createMany({
+        data: cleanedData
+      });
+
+      console.log(`${model} seeded (${cleanedData.length} rows)\n`);
+    }
+
+    console.log('SEED COMPLETE');
+  } catch (error) {
+    console.error('SEED FAILED:', error);
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
-processCsvFiles().catch(console.error);
+main();
 
+// TYPES
 type ModelName = Exclude<keyof typeof prisma,
   | '$connect'
   | '$disconnect'
@@ -60,47 +86,33 @@ type ModelName = Exclude<keyof typeof prisma,
   | '$queryRawUnsafe'
 >;
 
-const seedData = async (model: ModelName, data: any[]) => {
-  try {
-    const modelName = String(model);
 
-    console.log(modelName);
-
-    await (prisma[model] as any).createMany({
-      data
-    });
-  } catch (error) {
-    console.error(`Failed to seed ${String(model)}:`, error);
-  }
-}
-
+// DATA CASTING
 const castRow = async (model: string, row: Record<string, any>) => {
-  const schema: Record<string, FieldType> = fieldTypes[model]
-  const converted: Record<string, any> = {}
+  const schema = fieldTypes[model];
+  const converted: Record<string, any> = {};
 
   for (const [key, value] of Object.entries(row)) {
-    
-    const type: FieldType = schema[key] || 'string'
-    const val = value?.toString().trim()
+    const type = schema[key] || 'string';
+    const val = value?.toString().trim();
 
     if (type === 'number') {
-      converted[key] = Number(val)
+      converted[key] = Number(val);
+
     } else if (type === 'boolean') {
-      if(val === "0") {
-        converted[key] = false  
-      } else {
-        converted[key] = true
-      }
+      converted[key] = val === '1' || val === 'true';
+
     } else if (type === 'date') {
-      converted[key] = new Date(val)
+      converted[key] = new Date(val);
+
     } else {
       if (key === 'password') {
         converted[key] = await bcrypt.hash(val, 10);
       } else {
-        converted[key] = val
+        converted[key] = val;
       }
     }
   }
 
-  return converted
-}
+  return converted;
+};
