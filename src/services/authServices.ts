@@ -45,6 +45,9 @@ const authenticateUser = async (username: string, password: string) => {
         }
     });
 
+    console.log(user);
+    
+
     // Returnér null hvis bruger ikke findes
     if (!user) return null;
 

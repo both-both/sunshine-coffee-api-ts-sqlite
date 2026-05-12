@@ -14,6 +14,8 @@ export const Authenticate = async (req: Request, res: Response): Promise<void> =
 
     try {
         const result = await authenticateUser(username, password);
+        console.log(result);
+        
         if (!result) res.sendStatus(401);
         res.json(result);
     } catch (error: any) {
