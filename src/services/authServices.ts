@@ -76,7 +76,7 @@ const authenticateUser = async (username: string, password: string) => {
     return {
         accessToken,
         refreshToken,
-        user: { id: user.id, name: user.name },
+        user: { id: user.id, name: `${user.firstname} ${user.lastname}` },
     };
 };
 
